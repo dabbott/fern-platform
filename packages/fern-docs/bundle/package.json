@@ -143,6 +143,7 @@
     "styled-jsx": "^5.1.2",
     "swr": "^2.3.2",
     "three": "^0.173.0",
+    "tree-visit": "0.4.4",
     "ts-essentials": "^10.0.1",
     "unified": "^11.0.4",
     "url-join": "5.0.0",
