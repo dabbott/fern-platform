@@ -6,13 +6,6 @@ import { gracefulify } from "graceful-fs";
 import { bundleMDX } from "mdx-bundler";
 import path from "path";
 import rehypeKatex from "rehype-katex";
-import remarkFrontmatter from "remark-frontmatter";
-import remarkGemoji from "remark-gemoji";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import remarkSmartypants from "remark-smartypants";
-import remarkSqueezeParagraphs from "remark-squeeze-paragraphs";
 import { noop } from "ts-essentials";
 
 import type * as FernDocs from "@fern-api/fdr-sdk/docs";
@@ -29,8 +22,6 @@ import {
   rehypeMdxClassStyle,
   rehypeSlug,
   rehypeToc,
-  remarkInjectEsm,
-  remarkSanitizeAcorn,
 } from "@fern-docs/mdx/plugins";
 
 import { DocsLoader } from "@/server/docs-loader";
@@ -50,7 +41,7 @@ import { RehypeLinksOptions, rehypeLinks } from "../plugins/rehype-links";
 import { rehypeMigrateJsx } from "../plugins/rehype-migrate-jsx";
 import { rehypeSteps } from "../plugins/rehype-steps";
 import { rehypeTabs } from "../plugins/rehype-tabs";
-import { remarkExtractTitle } from "../plugins/remark-extract-title";
+import { getRemarkPlugins } from "./remark-plugins";
 
 // gracefulify fs to avoid EMFILE errors on Vercel
 gracefulify(fs);
@@ -138,18 +129,7 @@ async function serializeMdxImpl(
 
       o.providerImportSource = "@mdx-js/react";
 
-      const remarkPlugins: PluggableList = [
-        remarkFrontmatter,
-        remarkExtractTitle,
-        [remarkMdxFrontmatter, { name: "frontmatter" }],
-        remarkSqueezeParagraphs,
-        [remarkInjectEsm, { scope }],
-        [remarkSanitizeAcorn],
-        remarkGfm,
-        remarkSmartypants,
-        remarkMath,
-        remarkGemoji,
-      ];
+      const remarkPlugins: PluggableList = getRemarkPlugins(scope);
 
       const rehypePlugins: PluggableList = [
         rehypeKatex,
