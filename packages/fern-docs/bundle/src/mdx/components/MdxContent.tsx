@@ -54,7 +54,24 @@ function isMdxEmpty(mdx: MarkdownText | MarkdownText[] | undefined): boolean {
   return mdx.code.trim().length === 0;
 }
 
+const variableMapping = {
+  "--n-primary-pastel": "var(--accent-a3)",
+  "--n-primary": "var(--accent-a7)",
+  "--n-popover-background":
+    "light-dark(var(--grayscale-11), var(--grayscale-2))",
+};
+
 export function MdxContent({ mdx, fallback, editable }: MdxContent.Props) {
+  useEffect(() => {
+    if (document.documentElement.classList.contains("dark")) {
+      document.documentElement.dataset.theme = "dark";
+
+      for (const [key, value] of Object.entries(variableMapping)) {
+        document.documentElement.style.setProperty(key, value);
+      }
+    }
+  }, []);
+
   const isEditableHash = useIsEditable();
   const isEditable = editable && isEditableHash;
 
@@ -89,7 +106,6 @@ export function MdxContent({ mdx, fallback, editable }: MdxContent.Props) {
     return (
       <ErrorBoundary>
         <VisualMdxEditor
-          data-theme="dark"
           mdx={contentString}
           onChangeMdx={setContentString}
           parseMdast={parseMdast}
