@@ -62,7 +62,7 @@ export async function LayoutEvaluator({
       bottomNavigation={bottomNavigation}
       slug={slug}
     >
-      <MdxContent mdx={mdx} fallback={markdown} />
+      <MdxContent mdx={mdx} fallback={markdown} editable />
     </LayoutEvaluatorContent>
   );
 }

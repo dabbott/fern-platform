@@ -19227,6 +19227,7 @@ snapshots:
       '@noya-app/noya-designsystem': file:../noya-core/packages/noya-designsystem(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@noya-app/noya-geometry': file:../noya-core/packages/noya-geometry
       '@noya-app/noya-icons': file:../noya-core/packages/noya-icons(react@19.0.0)
+      '@noya-app/noya-keymap': file:../noya-core/packages/noya-keymap(react@19.0.0)
       '@noya-app/noya-utils': file:../noya-core/packages/noya-utils
       '@noya-app/react-utils': file:../noya-core/packages/noya-react-utils(react@19.0.0)
       react: 19.0.0

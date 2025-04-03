@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 
-import { VisualMdxEditor } from "@noya-app/visual-editor";
+import { MdastSelection, VisualMdxEditor } from "@noya-app/visual-editor";
 import "@noya-app/visual-editor/index.css";
 
 import { Mdast } from "@fern-docs/mdx";
@@ -14,12 +14,27 @@ import { MdxComponent } from "../bundler/component";
 import { getRemarkPlugins } from "../bundler/remark-plugins";
 import { createMdxComponents } from "./index";
 
+const parseMdast = (mdx: string) => {
+  return parseMDX({
+    mdx,
+    remarkPlugins: getRemarkPlugins(),
+  });
+};
+
+const stringifyMdast = (mdast: Mdast.Node) => {
+  return stringifyMDX({
+    mdast,
+    remarkPlugins: getRemarkPlugins(),
+  });
+};
+
 type MarkdownText = string | { code: string; jsxElements: string[] };
 
 export declare namespace MdxContent {
   export interface Props {
     mdx: MarkdownText | MarkdownText[] | undefined;
     fallback?: React.ReactNode;
+    editable?: boolean;
   }
 }
 
@@ -39,11 +54,15 @@ function isMdxEmpty(mdx: MarkdownText | MarkdownText[] | undefined): boolean {
   return mdx.code.trim().length === 0;
 }
 
-export function MdxContent({ mdx, fallback }: MdxContent.Props) {
-  const isEditable = useIsEditable();
+export function MdxContent({ mdx, fallback, editable }: MdxContent.Props) {
+  const isEditableHash = useIsEditable();
+  const isEditable = editable && isEditableHash;
 
   const [contentString, setContentString] = useState<string>(
     fallback?.toString() ?? ""
+  );
+  const [selection, setSelection] = useState<MdastSelection | undefined>(
+    undefined
   );
 
   if (isMdxEmpty(mdx) || mdx == null) {
@@ -67,20 +86,6 @@ export function MdxContent({ mdx, fallback }: MdxContent.Props) {
   if (isEditable) {
     const jsxElements = "jsxElements" in mdx ? mdx.jsxElements : [];
 
-    const parseMdast = (mdx: string) => {
-      return parseMDX({
-        mdx,
-        remarkPlugins: getRemarkPlugins(),
-      });
-    };
-
-    const stringifyMdast = (mdast: Mdast.Node) => {
-      return stringifyMDX({
-        mdast,
-        remarkPlugins: getRemarkPlugins(),
-      });
-    };
-
     return (
       <ErrorBoundary>
         <VisualMdxEditor
@@ -90,6 +95,8 @@ export function MdxContent({ mdx, fallback }: MdxContent.Props) {
           parseMdast={parseMdast}
           stringifyMdast={stringifyMdast}
           components={createMdxComponents(jsxElements) as any}
+          selection={selection}
+          onChangeSelection={setSelection}
         />
       </ErrorBoundary>
     );
