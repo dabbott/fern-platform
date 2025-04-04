@@ -3,6 +3,7 @@ import "server-only";
 import React from "react";
 
 import { ErrorBoundary } from "@/components/error-boundary";
+import { EditableField } from "@/components/layouts/EditorStorage";
 import { MdxSerializer } from "@/server/mdx-serializer";
 
 import { MdxContent } from "./MdxContent";
@@ -13,11 +14,13 @@ export async function MdxServerComponent({
   mdx,
   filename,
   slug,
+  editableField,
 }: {
   serialize: MdxSerializer;
   mdx: string | null | undefined;
   filename?: string;
   slug?: string;
+  editableField?: EditableField;
 }) {
   if (!mdx) {
     return null;
@@ -28,7 +31,9 @@ export async function MdxServerComponent({
     slug,
   });
 
-  return <MdxContent mdx={parsed_mdx} fallback={mdx} />;
+  return (
+    <MdxContent mdx={parsed_mdx} fallback={mdx} editableField={editableField} />
+  );
 }
 
 export function MdxServerComponentProse({

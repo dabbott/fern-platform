@@ -3,13 +3,18 @@
 import React, { useEffect, useState } from "react";
 
 import { useKeyboardShortcuts } from "@noya-app/noya-keymap";
-import { HistoryEntries, useNoyaState } from "@noya-app/noya-multiplayer-react";
 import { MdastSelection, VisualMdxEditor } from "@noya-app/visual-editor";
 import "@noya-app/visual-editor/index.css";
 
 import { Mdast } from "@fern-docs/mdx";
 
 import { ErrorBoundary } from "@/components/error-boundary";
+import {
+  EditableField,
+  EditorMetadata,
+  useNoyaManager,
+  useValueState,
+} from "@/components/layouts/EditorStorage";
 
 import { parseMDX, stringifyMDX } from "../bundler/client-serialize";
 import { MdxComponent } from "../bundler/component";
@@ -36,7 +41,7 @@ export declare namespace MdxContent {
   export interface Props {
     mdx: MarkdownText | MarkdownText[] | undefined;
     fallback?: React.ReactNode;
-    editable?: boolean;
+    editableField?: EditableField;
   }
 }
 
@@ -56,25 +61,9 @@ function isMdxEmpty(mdx: MarkdownText | MarkdownText[] | undefined): boolean {
   return mdx.code.trim().length === 0;
 }
 
-const variableMapping = {
-  "--n-primary-pastel": "var(--accent-a3)",
-  "--n-primary": "var(--accent-a7)",
-  "--n-popover-background":
-    "light-dark(var(--grayscale-11), var(--grayscale-2))",
-};
-
-type VisualEditorState = {
-  content: string;
-};
-
-type VisualEditorMetadata = {
-  selectionBefore: MdastSelection | undefined;
-  selectionAfter: MdastSelection | undefined;
-};
-
-export function MdxContent({ mdx, fallback, editable }: MdxContent.Props) {
+export function MdxContent({ mdx, fallback, editableField }: MdxContent.Props) {
   const isEditableHash = useIsEditable();
-  const isEditable = editable && isEditableHash;
+  const isEditable = editableField && isEditableHash;
 
   if (isMdxEmpty(mdx) || mdx == null) {
     return fallback;
@@ -94,10 +83,8 @@ export function MdxContent({ mdx, fallback, editable }: MdxContent.Props) {
     );
   }
 
-  if (isEditable) {
-    return (
-      <EditableMdxContent mdx={mdx} fallback={fallback} editable={editable} />
-    );
+  if (isEditable && editableField) {
+    return <EditableMdxContent mdx={mdx} editableField={editableField} />;
   }
 
   return (
@@ -107,50 +94,11 @@ export function MdxContent({ mdx, fallback, editable }: MdxContent.Props) {
   );
 }
 
-function EditableMdxContent({ mdx, fallback }: MdxContent.Props) {
-  useEffect(() => {
-    if (document.documentElement.classList.contains("dark")) {
-      document.documentElement.dataset.theme = "dark";
+function EditableMdxContent({ mdx, editableField }: MdxContent.Props) {
+  const noyaManager = useNoyaManager();
 
-      for (const [key, value] of Object.entries(variableMapping)) {
-        document.documentElement.style.setProperty(key, value);
-      }
-    }
-  }, []);
-
-  const [state, setState, { noyaManager }] = useNoyaState<
-    VisualEditorState,
-    VisualEditorMetadata
-  >(
-    {
-      content: fallback?.toString() ?? "",
-    },
-    {
-      inspector: true,
-      mergeHistoryEntries({ previous, next }) {
-        if (
-          previous.metadata.name !== undefined &&
-          previous.metadata.name === next.metadata.name &&
-          previous.metadata.timestamp + 500 > next.metadata.timestamp
-        ) {
-          const newHistoryEntry = HistoryEntries.merge({ previous, next });
-          newHistoryEntry.metadata.selectionBefore =
-            previous.metadata.selectionBefore;
-          newHistoryEntry.metadata.selectionAfter =
-            next.metadata.selectionAfter;
-          return newHistoryEntry;
-        }
-
-        return undefined;
-      },
-    }
-  );
-
-  const [selection, setSelection] = useState<MdastSelection | undefined>(
-    undefined
-  );
-
-  console.log({ content: state.content, selection });
+  const [content, setContent] = useValueState(editableField);
+  const [selection, setSelection] = useState<MdastSelection | undefined>();
 
   useKeyboardShortcuts({
     "Mod-z": {
@@ -158,7 +106,6 @@ function EditableMdxContent({ mdx, fallback }: MdxContent.Props) {
       command: () => {
         if (noyaManager.multiplayerStateManager.canUndo()) {
           noyaManager.multiplayerStateManager.undo();
-          console.log("undo");
           const stateManager = noyaManager.multiplayerStateManager.sm;
           const history = stateManager.history;
           const lastEntry = history[stateManager.historyIndex];
@@ -193,17 +140,14 @@ function EditableMdxContent({ mdx, fallback }: MdxContent.Props) {
   return (
     <ErrorBoundary>
       <VisualMdxEditor
-        mdx={state.content}
-        onChangeMdx={(mdx, params) =>
-          setState(params, {
-            content: mdx,
-          })
-        }
+        mdx={content}
+        onChangeMdx={(mdx, params) => setContent(params as EditorMetadata, mdx)}
         parseMdast={parseMdast}
         stringifyMdast={stringifyMdast}
-        components={createMdxComponents(jsxElements) as any}
+        components={createMdxComponents(jsxElements)}
         selection={selection}
         onChangeSelection={setSelection}
+        showSelectionToolbar={editableField === "content"}
       />
     </ErrorBoundary>
   );
