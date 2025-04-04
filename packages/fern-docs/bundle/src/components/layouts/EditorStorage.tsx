@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 
+import { useKeyboardShortcuts } from "@noya-app/noya-keymap";
 import {
   HistoryEntries,
   Static,
@@ -18,6 +19,18 @@ export const editorStateSchema = Type.Object({
   subtitle: Type.String(),
 });
 
+type EditorSelection = {
+  content: MdastSelection | undefined;
+  title: MdastSelection | undefined;
+  subtitle: MdastSelection | undefined;
+};
+
+export const EditorSelectionContext = createContext<EditorSelection>({
+  content: undefined,
+  title: undefined,
+  subtitle: undefined,
+});
+
 export type EditorStateSchema = typeof editorStateSchema;
 
 export type EditorState = Static<EditorStateSchema>;
@@ -27,6 +40,7 @@ export type EditorMetadata = {
   selectionAfter: MdastSelection | undefined;
   name?: string;
   timestamp: number;
+  editableField: EditableField;
 };
 
 export const { Provider, useValueState, useNoyaManager } = createNoyaContext<
@@ -38,6 +52,7 @@ export const { Provider, useValueState, useNoyaManager } = createNoyaContext<
     if (
       previous.metadata.name !== undefined &&
       previous.metadata.name === next.metadata.name &&
+      previous.metadata.editableField === next.metadata.editableField &&
       previous.metadata.timestamp + 500 > next.metadata.timestamp
     ) {
       const newHistoryEntry = HistoryEntries.merge({ previous, next });
@@ -79,7 +94,77 @@ export function EditorStorage({
     }
   }, []);
 
+  const [selection, setSelection] = useState<{
+    content: MdastSelection | undefined;
+    title: MdastSelection | undefined;
+    subtitle: MdastSelection | undefined;
+  }>({
+    content: undefined,
+    title: undefined,
+    subtitle: undefined,
+  });
+
   return (
-    <Provider initialState={{ content, title, subtitle }}>{children}</Provider>
+    <Provider
+      initialState={{ content, title, subtitle }}
+      inspector={{
+        colorScheme: "dark",
+        anchor: "bottom right",
+      }}
+    >
+      <EditorSelectionContext.Provider value={selection}>
+        <Behavior setSelection={setSelection} />
+        {children}
+      </EditorSelectionContext.Provider>
+    </Provider>
   );
+}
+
+function Behavior({
+  setSelection,
+}: {
+  setSelection: React.Dispatch<React.SetStateAction<EditorSelection>>;
+}) {
+  const noyaManager = useNoyaManager();
+
+  useKeyboardShortcuts({
+    "Mod-z": {
+      allowInInput: true,
+      command: () => {
+        if (noyaManager.multiplayerStateManager.canUndo()) {
+          noyaManager.multiplayerStateManager.undo();
+          const stateManager = noyaManager.multiplayerStateManager.sm;
+          const history = stateManager.history;
+          const lastEntry = history[stateManager.historyIndex];
+          if (lastEntry) {
+            setSelection((selection) => ({
+              ...selection,
+              [lastEntry.metadata.editableField as keyof EditorSelection]:
+                lastEntry.metadata.selectionBefore,
+            }));
+          }
+        }
+      },
+    },
+    "Mod-Shift-z": {
+      allowInInput: true,
+      command: () => {
+        if (noyaManager.multiplayerStateManager.canRedo()) {
+          noyaManager.multiplayerStateManager.redo();
+          const stateManager = noyaManager.multiplayerStateManager.sm;
+          const history = stateManager.history;
+          const lastEntry = history[stateManager.historyIndex - 1];
+          if (lastEntry) {
+            setSelection((selection) => ({
+              ...selection,
+              [lastEntry.metadata.editableField as keyof EditorSelection]:
+                lastEntry.metadata.selectionAfter,
+            }));
+          }
+        }
+      },
+    },
+  });
+
+  return <></>;
 }

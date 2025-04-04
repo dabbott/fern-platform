@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 
-import { useKeyboardShortcuts } from "@noya-app/noya-keymap";
 import { MdastSelection, VisualMdxEditor } from "@noya-app/visual-editor";
 import "@noya-app/visual-editor/index.css";
 
@@ -12,7 +11,6 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import {
   EditableField,
   EditorMetadata,
-  useNoyaManager,
   useValueState,
 } from "@/components/layouts/EditorStorage";
 
@@ -95,41 +93,8 @@ export function MdxContent({ mdx, fallback, editableField }: MdxContent.Props) {
 }
 
 function EditableMdxContent({ mdx, editableField }: MdxContent.Props) {
-  const noyaManager = useNoyaManager();
-
   const [content, setContent] = useValueState(editableField);
   const [selection, setSelection] = useState<MdastSelection | undefined>();
-
-  useKeyboardShortcuts({
-    "Mod-z": {
-      allowInInput: true,
-      command: () => {
-        if (noyaManager.multiplayerStateManager.canUndo()) {
-          noyaManager.multiplayerStateManager.undo();
-          const stateManager = noyaManager.multiplayerStateManager.sm;
-          const history = stateManager.history;
-          const lastEntry = history[stateManager.historyIndex];
-          if (lastEntry) {
-            setSelection(lastEntry.metadata.selectionBefore);
-          }
-        }
-      },
-    },
-    "Mod-Shift-z": {
-      allowInInput: true,
-      command: () => {
-        if (noyaManager.multiplayerStateManager.canRedo()) {
-          noyaManager.multiplayerStateManager.redo();
-          const stateManager = noyaManager.multiplayerStateManager.sm;
-          const history = stateManager.history;
-          const lastEntry = history[stateManager.historyIndex - 1];
-          if (lastEntry) {
-            setSelection(lastEntry.metadata.selectionAfter);
-          }
-        }
-      },
-    },
-  });
 
   if (!mdx || typeof mdx === "string") {
     return mdx;
@@ -141,7 +106,9 @@ function EditableMdxContent({ mdx, editableField }: MdxContent.Props) {
     <ErrorBoundary>
       <VisualMdxEditor
         mdx={content}
-        onChangeMdx={(mdx, params) => setContent(params as EditorMetadata, mdx)}
+        onChangeMdx={(mdx, params) =>
+          setContent({ ...params, editableField } as EditorMetadata, mdx)
+        }
         parseMdast={parseMdast}
         stringifyMdast={stringifyMdast}
         components={createMdxComponents(jsxElements)}
