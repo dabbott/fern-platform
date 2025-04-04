@@ -59,6 +59,13 @@ const nextConfig: NextConfig = {
     "@noya-app/react-utils",
     "@noya-app/noya-react-utils",
     "@noya-app/noya-tailwind-config",
+    "@noya-app/noya-multiplayer-react",
+    "@noya-app/state-manager",
+    "@noya-app/observable",
+    "@noya-app/task-runner",
+    "@noya-app/noya-schemas",
+    "@noya-app/noya-pipeline",
+    "@noya-app/noya-keymap",
   ],
   experimental: {
     appNavFailHandling: true,

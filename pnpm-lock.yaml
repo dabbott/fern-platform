@@ -13,9 +13,14 @@ overrides:
   '@noya-app/noya-geometry': file:../noya-core/packages/noya-geometry
   '@noya-app/noya-icons': file:../noya-core/packages/noya-icons
   '@noya-app/noya-keymap': file:../noya-core/packages/noya-keymap
+  '@noya-app/noya-pipeline': file:../noya-core/packages/noya-pipeline
+  '@noya-app/noya-schemas': file:../noya-core/packages/noya-schemas
   '@noya-app/noya-tailwind-config': file:../noya-core/packages/noya-tailwind-config
   '@noya-app/noya-utils': file:../noya-core/packages/noya-utils
+  '@noya-app/observable': file:../noya-core/packages/observable
   '@noya-app/react-utils': file:../noya-core/packages/noya-react-utils
+  '@noya-app/state-manager': file:../noya-core/packages/state-manager
+  '@noya-app/task-runner': file:../noya-core/packages/task-runner
   clipboardy: 4.0.0
   colorjs.io: ^0.5.2
   cookie: 0.7.0
@@ -799,6 +804,12 @@ importers:
       '@microlink/react-json-view':
         specifier: ^1.26.1
         version: 1.26.1(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@noya-app/noya-keymap':
+        specifier: file:../../../../noya-core/packages/noya-keymap
+        version: file:../noya-core/packages/noya-keymap(react@19.0.0)
+      '@noya-app/noya-multiplayer-react':
+        specifier: file:../../../../noya-core/packages/noya-multiplayer-react
+        version: file:../noya-core/packages/noya-multiplayer-react(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@noya-app/visual-editor':
         specifier: file:../../../../noya-core/packages/visual-editor
         version: file:../noya-core/packages/visual-editor(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -868,6 +879,9 @@ importers:
       '@segment/snippet':
         specifier: ^5.2.1
         version: 5.2.1
+      '@sinclair/typebox':
+        specifier: 0.32.30
+        version: 0.32.30
       '@slack/web-api':
         specifier: ^6.9.0
         version: 6.12.0
@@ -900,7 +914,7 @@ importers:
         version: 2.1.0
       braintrust:
         specifier: ^0.0.184
-        version: 0.0.184(@aws-sdk/credential-provider-web-identity@3.744.0)(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1)
+        version: 0.0.184(@aws-sdk/credential-provider-web-identity@3.744.0)(openai@4.47.1)(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1)
       colorjs.io:
         specifier: ^0.5.2
         version: 0.5.2
@@ -922,6 +936,9 @@ importers:
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
+      fast-diff:
+        specifier: 1.3.0
+        version: 1.3.0
       fastdom:
         specifier: ^1.0.12
         version: 1.0.12
@@ -958,6 +975,9 @@ importers:
       launchdarkly-react-client-sdk:
         specifier: ^3.6.0
         version: 3.6.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      lodash.get:
+        specifier: ^4.4.2
+        version: 4.4.2
       lucide-react:
         specifier: ^0.460.0
         version: 0.460.0(react@19.0.0)
@@ -970,12 +990,18 @@ importers:
       motion:
         specifier: ^12.4.7
         version: 12.4.7(@emotion/is-prop-valid@1.2.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      mutative:
+        specifier: npm:@dabbott/mutative@1.0.5-alpha.6
+        version: '@dabbott/mutative@1.0.5-alpha.6'
       next:
         specifier: 15.3.0-canary.1
         version: 15.3.0-canary.1(@babel/core@7.26.9)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(sass@1.77.0)
       next-themes:
         specifier: ^0.4.4
         version: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      openai:
+        specifier: 4.47.1
+        version: 4.47.1
       parse-numeric-range:
         specifier: ^1.3.0
         version: 1.3.0
@@ -3805,6 +3831,10 @@ packages:
     peerDependencies:
       postcss-selector-parser: ^7.0.0
 
+  '@dabbott/mutative@1.0.5-alpha.6':
+    resolution: {integrity: sha512-HgPIUPSUt1G06swim0fNcmIa2ATCbH72ELnrkYg3PskfOE9StTRPpvmthPs9VIeQu1O2BJNPjDUAQtDEF+jqGw==}
+    engines: {node: '>=14.0'}
+
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
 
@@ -4649,16 +4679,37 @@ packages:
     peerDependencies:
       react: 19.0.0
 
+  '@noya-app/noya-multiplayer-react@file:../noya-core/packages/noya-multiplayer-react':
+    resolution: {directory: ../noya-core/packages/noya-multiplayer-react, type: directory}
+    peerDependencies:
+      react: 19.0.0
+      react-dom: 19.0.0
+
+  '@noya-app/noya-pipeline@file:../noya-core/packages/noya-pipeline':
+    resolution: {directory: ../noya-core/packages/noya-pipeline, type: directory}
+
+  '@noya-app/noya-schemas@file:../noya-core/packages/noya-schemas':
+    resolution: {directory: ../noya-core/packages/noya-schemas, type: directory}
+
   '@noya-app/noya-tailwind-config@file:../noya-core/packages/noya-tailwind-config':
     resolution: {directory: ../noya-core/packages/noya-tailwind-config, type: directory}
 
   '@noya-app/noya-utils@file:../noya-core/packages/noya-utils':
     resolution: {directory: ../noya-core/packages/noya-utils, type: directory}
 
+  '@noya-app/observable@file:../noya-core/packages/observable':
+    resolution: {directory: ../noya-core/packages/observable, type: directory}
+
   '@noya-app/react-utils@file:../noya-core/packages/noya-react-utils':
     resolution: {directory: ../noya-core/packages/noya-react-utils, type: directory}
     peerDependencies:
       react: 19.0.0
+
+  '@noya-app/state-manager@file:../noya-core/packages/state-manager':
+    resolution: {directory: ../noya-core/packages/state-manager, type: directory}
+
+  '@noya-app/task-runner@file:../noya-core/packages/task-runner':
+    resolution: {directory: ../noya-core/packages/task-runner, type: directory}
 
   '@noya-app/visual-editor@file:../noya-core/packages/visual-editor':
     resolution: {directory: ../noya-core/packages/visual-editor, type: directory}
@@ -6003,6 +6054,9 @@ packages:
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
+
+  '@sinclair/typebox@0.32.30':
+    resolution: {integrity: sha512-IYK1H0k2sHVB2GjzBK2DXBErhex45GoLuPdgn8lNw5t0+5elIuhpixOMPobFyq6kE0AGIBa4+76Ph4enco0q2Q==}
 
   '@sindresorhus/is@4.6.0':
     resolution: {integrity: sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==}
@@ -7710,6 +7764,10 @@ packages:
   agent-base@7.1.3:
     resolution: {integrity: sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==}
     engines: {node: '>= 14'}
+
+  agentkeepalive@4.6.0:
+    resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
+    engines: {node: '>= 8.0.0'}
 
   aggregate-error@3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
@@ -9996,6 +10054,9 @@ packages:
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
+  fast-diff@1.3.0:
+    resolution: {integrity: sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==}
+
   fast-fifo@1.3.2:
     resolution: {integrity: sha512-/d9sfos4yxzpwkDkuN7k2SqFKtYNmCTzgfEpz82x34IM9/zc8KGxQoXg1liNC/izpRM/MBdt44Nmx41ZWqk+FQ==}
 
@@ -10228,6 +10289,9 @@ packages:
     peerDependencies:
       typescript: 5.7.3
       webpack: 5.94.0
+
+  form-data-encoder@1.7.2:
+    resolution: {integrity: sha512-qfqtYan3rxrnCk1VYaA4H+Ms9xdpPqvLZa6xmMgFvhO32x7/3J/ExcTd6qpxM0vH2GdMI+poehyBZvqfMTto8A==}
 
   form-data@2.5.1:
     resolution: {integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA==}
@@ -10828,6 +10892,9 @@ packages:
   human-signals@8.0.0:
     resolution: {integrity: sha512-/1/GPCpDUCCYwlERiYjxoczfP0zfvZMU/OWgQPMya9AbAE24vseigFdhAMObpc8Q4lc/kjutPfUddDYyAmejnA==}
     engines: {node: '>=18.18.0'}
+
+  humanize-ms@1.2.1:
+    resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
 
   husky@8.0.3:
     resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
@@ -11890,6 +11957,10 @@ packages:
   lodash.flatten@4.4.0:
     resolution: {integrity: sha512-C5N2Z3DgnnKr0LOpv/hKCgKdb7ZZwafIrsesve6lmzvZIRZRGaZ/l6Q8+2W7NaT+ZwO3fFlSCzCzrDCFdJfZ4g==}
 
+  lodash.get@4.4.2:
+    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
+
   lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
 
@@ -11919,6 +11990,9 @@ packages:
 
   lodash.once@4.1.1:
     resolution: {integrity: sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==}
+
+  lodash.set@4.3.2:
+    resolution: {integrity: sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==}
 
   lodash.sortby@4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
@@ -12712,6 +12786,10 @@ packages:
   open@8.4.2:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
+
+  openai@4.47.1:
+    resolution: {integrity: sha512-WWSxhC/69ZhYWxH/OBsLEirIjUcfpQ5+ihkXKp06hmeYXgBBIUCa9IptMzYx6NdkiOCsSGYCnTIsxaic3AjRCQ==}
+    hasBin: true
 
   openapi3-ts@4.4.0:
     resolution: {integrity: sha512-9asTNB9IkKEzWMcHmVZE7Ts3kC9G7AFHfs8i7caD8HbI76gEjdkId4z/AkP83xdZsH7PLAnnbl47qZkXuxpArw==}
@@ -13617,6 +13695,11 @@ packages:
 
   react-error-boundary@5.0.0:
     resolution: {integrity: sha512-tnjAxG+IkpLephNcePNA7v6F/QpWLH8He65+DmedchDwg162JZqx4NmbXj0mlAYVVEd81OW7aFhmbsScYfiAFQ==}
+    peerDependencies:
+      react: 19.0.0
+
+  react-inspector@6.0.2:
+    resolution: {integrity: sha512-x+b7LxhmHXjHoU/VrFAzw5iutsILRoYyDq97EDYdFpPLcvqtEzk4ZSZSQjnFPbr5T57tLXnHcqFYoN1pI6u8uQ==}
     peerDependencies:
       react: 19.0.0
 
@@ -15795,6 +15878,10 @@ packages:
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
+
+  web-streams-polyfill@3.3.3:
+    resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
+    engines: {node: '>= 8'}
 
   web-streams-polyfill@4.0.0-beta.3:
     resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
@@ -18224,6 +18311,8 @@ snapshots:
     dependencies:
       postcss-selector-parser: 7.1.0
 
+  '@dabbott/mutative@1.0.5-alpha.6': {}
+
   '@dabh/diagnostics@2.0.3':
     dependencies:
       colorspace: 1.1.4
@@ -19210,17 +19299,68 @@ snapshots:
       react: 19.0.0
       w3c-keyname: 2.2.8
 
+  '@noya-app/noya-multiplayer-react@file:../noya-core/packages/noya-multiplayer-react(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@noya-app/emitter': file:../noya-core/packages/emitter
+      '@noya-app/observable': file:../noya-core/packages/observable
+      '@noya-app/react-utils': file:../noya-core/packages/noya-react-utils(react@19.0.0)
+      '@noya-app/state-manager': file:../noya-core/packages/state-manager
+      '@noya-app/task-runner': file:../noya-core/packages/task-runner
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+      react-inspector: 6.0.2(react@19.0.0)
+    transitivePeerDependencies:
+      - encoding
+
+  '@noya-app/noya-pipeline@file:../noya-core/packages/noya-pipeline':
+    dependencies:
+      '@noya-app/noya-schemas': file:../noya-core/packages/noya-schemas
+      '@noya-app/noya-utils': file:../noya-core/packages/noya-utils
+      '@noya-app/observable': file:../noya-core/packages/observable
+      '@noya-app/task-runner': file:../noya-core/packages/task-runner
+      '@sinclair/typebox': 0.32.30
+
+  '@noya-app/noya-schemas@file:../noya-core/packages/noya-schemas':
+    dependencies:
+      '@sinclair/typebox': 0.32.30
+      tree-visit: 0.4.4
+
   '@noya-app/noya-tailwind-config@file:../noya-core/packages/noya-tailwind-config': {}
 
   '@noya-app/noya-utils@file:../noya-core/packages/noya-utils':
     dependencies:
       uuid: 8.3.2
 
+  '@noya-app/observable@file:../noya-core/packages/observable':
+    dependencies:
+      '@noya-app/emitter': file:../noya-core/packages/emitter
+      lodash.get: 4.4.2
+      lodash.set: 4.3.2
+
   '@noya-app/react-utils@file:../noya-core/packages/noya-react-utils(react@19.0.0)':
     dependencies:
       '@noya-app/emitter': file:../noya-core/packages/emitter
       '@noya-app/noya-utils': file:../noya-core/packages/noya-utils
       react: 19.0.0
+
+  '@noya-app/state-manager@file:../noya-core/packages/state-manager':
+    dependencies:
+      '@noya-app/emitter': file:../noya-core/packages/emitter
+      '@noya-app/noya-pipeline': file:../noya-core/packages/noya-pipeline
+      '@noya-app/noya-schemas': file:../noya-core/packages/noya-schemas
+      '@noya-app/noya-utils': file:../noya-core/packages/noya-utils
+      '@noya-app/observable': file:../noya-core/packages/observable
+      '@noya-app/task-runner': file:../noya-core/packages/task-runner
+      '@sinclair/typebox': 0.32.30
+      fast-diff: 1.3.0
+      lodash.get: 4.4.2
+      mutative: '@dabbott/mutative@1.0.5-alpha.6'
+      openai: 4.47.1
+      tree-visit: 0.4.4
+    transitivePeerDependencies:
+      - encoding
+
+  '@noya-app/task-runner@file:../noya-core/packages/task-runner': {}
 
   '@noya-app/visual-editor@file:../noya-core/packages/visual-editor(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -20660,6 +20800,8 @@ snapshots:
   '@sideway/pinpoint@2.0.0': {}
 
   '@sinclair/typebox@0.27.8': {}
+
+  '@sinclair/typebox@0.32.30': {}
 
   '@sindresorhus/is@4.6.0': {}
 
@@ -23213,12 +23355,16 @@ snapshots:
 
   agent-base@7.1.3: {}
 
+  agentkeepalive@4.6.0:
+    dependencies:
+      humanize-ms: 1.2.1
+
   aggregate-error@3.1.0:
     dependencies:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@3.4.33(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1):
+  ai@3.4.33(openai@4.47.1)(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1):
     dependencies:
       '@ai-sdk/provider': 0.0.26
       '@ai-sdk/provider-utils': 1.0.22(zod@3.24.1)
@@ -23234,6 +23380,7 @@ snapshots:
       secure-json-parse: 2.7.0
       zod-to-json-schema: 3.24.3(zod@3.24.1)
     optionalDependencies:
+      openai: 4.47.1
       react: 19.0.0
       sswr: 2.1.0(svelte@5.19.2)
       svelte: 5.19.2
@@ -23850,13 +23997,13 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  braintrust@0.0.184(@aws-sdk/credential-provider-web-identity@3.744.0)(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1):
+  braintrust@0.0.184(@aws-sdk/credential-provider-web-identity@3.744.0)(openai@4.47.1)(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1):
     dependencies:
       '@ai-sdk/provider': 1.0.9
       '@braintrust/core': 0.0.78
       '@next/env': 14.2.9
       '@vercel/functions': 1.5.2(@aws-sdk/credential-provider-web-identity@3.744.0)
-      ai: 3.4.33(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1)
+      ai: 3.4.33(openai@4.47.1)(react@19.0.0)(sswr@2.1.0(svelte@5.19.2))(svelte@5.19.2)(vue@3.5.13(typescript@5.7.3))(zod@3.24.1)
       argparse: 2.0.1
       chalk: 4.1.2
       cli-progress: 3.12.0
@@ -26061,6 +26208,8 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
+  fast-diff@1.3.0: {}
+
   fast-fifo@1.3.2: {}
 
   fast-glob@3.3.1:
@@ -26306,6 +26455,8 @@ snapshots:
       tapable: 2.2.1
       typescript: 5.7.3
       webpack: 5.94.0(@swc/core@1.5.7(@swc/helpers@0.5.15))(esbuild@0.25.0)
+
+  form-data-encoder@1.7.2: {}
 
   form-data@2.5.1:
     dependencies:
@@ -27114,6 +27265,10 @@ snapshots:
   human-signals@5.0.0: {}
 
   human-signals@8.0.0: {}
+
+  humanize-ms@1.2.1:
+    dependencies:
+      ms: 2.1.3
 
   husky@8.0.3: {}
 
@@ -28375,6 +28530,8 @@ snapshots:
 
   lodash.flatten@4.4.0: {}
 
+  lodash.get@4.4.2: {}
+
   lodash.includes@4.3.0: {}
 
   lodash.isarguments@3.1.0: {}
@@ -28394,6 +28551,8 @@ snapshots:
   lodash.merge@4.6.2: {}
 
   lodash.once@4.1.1: {}
+
+  lodash.set@4.3.2: {}
 
   lodash.sortby@4.7.0: {}
 
@@ -29551,6 +29710,19 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
+  openai@4.47.1:
+    dependencies:
+      '@types/node': 18.19.76
+      '@types/node-fetch': 2.6.9
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+      web-streams-polyfill: 3.3.3
+    transitivePeerDependencies:
+      - encoding
+
   openapi3-ts@4.4.0:
     dependencies:
       yaml: 2.7.0
@@ -30402,6 +30574,10 @@ snapshots:
   react-error-boundary@5.0.0(react@19.0.0):
     dependencies:
       '@babel/runtime': 7.26.0
+      react: 19.0.0
+
+  react-inspector@6.0.2(react@19.0.0):
+    dependencies:
       react: 19.0.0
 
   react-instantsearch-core@7.15.3(algoliasearch@5.20.3)(react@19.0.0):
@@ -33266,6 +33442,8 @@ snapshots:
       defaults: 1.0.4
 
   web-namespaces@2.0.1: {}
+
+  web-streams-polyfill@3.3.3: {}
 
   web-streams-polyfill@4.0.0-beta.3: {}
 
