@@ -9,7 +9,7 @@ import {
   Type,
   createNoyaContext,
 } from "@noya-app/noya-multiplayer-react";
-import { MdastSelection } from "@noya-app/visual-editor";
+import { VRange } from "@noya-app/visual-editor";
 
 export type EditableField = "content" | "title" | "subtitle";
 
@@ -20,15 +20,15 @@ export const editorStateSchema = Type.Object({
 });
 
 type EditorSelection = {
-  content: MdastSelection | undefined;
-  title: MdastSelection | undefined;
-  subtitle: MdastSelection | undefined;
+  content: VRange | null;
+  title: VRange | null;
+  subtitle: VRange | null;
 };
 
 export const EditorSelectionContext = createContext<EditorSelection>({
-  content: undefined,
-  title: undefined,
-  subtitle: undefined,
+  content: null,
+  title: null,
+  subtitle: null,
 });
 
 export type EditorStateSchema = typeof editorStateSchema;
@@ -36,8 +36,8 @@ export type EditorStateSchema = typeof editorStateSchema;
 export type EditorState = Static<EditorStateSchema>;
 
 export type EditorMetadata = {
-  selectionBefore: MdastSelection | undefined;
-  selectionAfter: MdastSelection | undefined;
+  selectionBefore: VRange | null;
+  selectionAfter: VRange | null;
   name?: string;
   timestamp: number;
   editableField: EditableField;
@@ -95,13 +95,13 @@ export function EditorStorage({
   }, []);
 
   const [selection, setSelection] = useState<{
-    content: MdastSelection | undefined;
-    title: MdastSelection | undefined;
-    subtitle: MdastSelection | undefined;
+    content: VRange | null;
+    title: VRange | null;
+    subtitle: VRange | null;
   }>({
-    content: undefined,
-    title: undefined,
-    subtitle: undefined,
+    content: null,
+    title: null,
+    subtitle: null,
   });
 
   return (
