@@ -2,16 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 
-import { MdastSelection, VisualMdxEditor } from "@noya-app/visual-editor";
+import { VisualMdxEditor } from "@noya-app/visual-editor";
 import "@noya-app/visual-editor/index.css";
 
 import { Mdast } from "@fern-docs/mdx";
 
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
-  EditableField,
+  EditorField,
   EditorMetadata,
-  useValueState,
+  useEditorContext,
 } from "@/components/layouts/EditorStorage";
 
 import { parseMDX, stringifyMDX } from "../bundler/client-serialize";
@@ -39,7 +39,7 @@ export declare namespace MdxContent {
   export interface Props {
     mdx: MarkdownText | MarkdownText[] | undefined;
     fallback?: React.ReactNode;
-    editableField?: EditableField;
+    editorField?: EditorField;
   }
 }
 
@@ -59,9 +59,9 @@ function isMdxEmpty(mdx: MarkdownText | MarkdownText[] | undefined): boolean {
   return mdx.code.trim().length === 0;
 }
 
-export function MdxContent({ mdx, fallback, editableField }: MdxContent.Props) {
+export function MdxContent({ mdx, fallback, editorField }: MdxContent.Props) {
   const isEditableHash = useIsEditable();
-  const isEditable = editableField && isEditableHash;
+  const isEditable = editorField && isEditableHash;
 
   if (isMdxEmpty(mdx) || mdx == null) {
     return fallback;
@@ -81,8 +81,8 @@ export function MdxContent({ mdx, fallback, editableField }: MdxContent.Props) {
     );
   }
 
-  if (isEditable && editableField) {
-    return <EditableMdxContent mdx={mdx} editableField={editableField} />;
+  if (isEditable && editorField) {
+    return <EditableMdxContent mdx={mdx} editorField={editorField} />;
   }
 
   return (
@@ -92,9 +92,10 @@ export function MdxContent({ mdx, fallback, editableField }: MdxContent.Props) {
   );
 }
 
-function EditableMdxContent({ mdx, editableField }: MdxContent.Props) {
-  const [content, setContent] = useValueState(editableField);
-  const [selection, setSelection] = useState<MdastSelection | undefined>();
+function EditableMdxContent({ mdx, editorField }: MdxContent.Props) {
+  const contextValue = useEditorContext();
+  const { value, selection, setValue, setSelection } =
+    contextValue[editorField as EditorField];
 
   if (!mdx || typeof mdx === "string") {
     return mdx;
@@ -105,16 +106,16 @@ function EditableMdxContent({ mdx, editableField }: MdxContent.Props) {
   return (
     <ErrorBoundary>
       <VisualMdxEditor
-        mdx={content}
+        mdx={value}
         onChangeMdx={(mdx, params) =>
-          setContent({ ...params, editableField } as EditorMetadata, mdx)
+          setValue(mdx, { ...params, editorField } as EditorMetadata)
         }
         parseMdast={parseMdast}
         stringifyMdast={stringifyMdast}
         components={createMdxComponents(jsxElements)}
         selection={selection}
         onChangeSelection={setSelection}
-        showSelectionToolbar={editableField === "content"}
+        showSelectionToolbar={editorField === "content"}
       />
     </ErrorBoundary>
   );

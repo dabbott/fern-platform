@@ -47,7 +47,7 @@ export function PageHeader({
               serialize={serialize}
               mdx={title}
               slug={slug}
-              editableField="title"
+              editorField="title"
             />
           </h1>
         ) : (
@@ -57,7 +57,7 @@ export function PageHeader({
                 serialize={serialize}
                 mdx={title}
                 slug={slug}
-                editableField="title"
+                editorField="title"
               />
             </h1>
           </FernLink>
@@ -71,7 +71,7 @@ export function PageHeader({
               serialize={serialize}
               mdx={subtitle}
               slug={slug}
-              editableField="subtitle"
+              editorField="subtitle"
             />
           </React.Suspense>
         </div>

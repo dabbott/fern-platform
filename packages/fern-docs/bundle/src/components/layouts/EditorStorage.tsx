@@ -1,17 +1,33 @@
 "use client";
 
-import { createContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { useKeyboardShortcuts } from "@noya-app/noya-keymap";
 import {
   HistoryEntries,
+  HistoryEntry,
+  MultiplayerStateManager,
   Static,
   Type,
-  createNoyaContext,
+  useObservable,
 } from "@noya-app/noya-multiplayer-react";
 import { VRange } from "@noya-app/visual-editor";
 
-export type EditableField = "content" | "title" | "subtitle";
+export type EditorField = "content" | "title" | "subtitle";
+
+type EditorFieldState = {
+  value: string;
+  selection: VRange | null;
+  setValue: (value: string, params: any) => void;
+  setSelection: (selection: VRange | null) => void;
+};
 
 export const editorStateSchema = Type.Object({
   content: Type.String(),
@@ -19,52 +35,61 @@ export const editorStateSchema = Type.Object({
   subtitle: Type.String(),
 });
 
-type EditorSelection = {
-  content: VRange | null;
-  title: VRange | null;
-  subtitle: VRange | null;
+type EditorContextValue = {
+  content: EditorFieldState;
+  title: EditorFieldState;
+  subtitle: EditorFieldState;
 };
 
-export const EditorSelectionContext = createContext<EditorSelection>({
-  content: null,
-  title: null,
-  subtitle: null,
-});
+export const EditorContext = createContext<EditorContextValue | undefined>(
+  undefined
+);
 
-export type EditorStateSchema = typeof editorStateSchema;
+export const useEditorContext = () => {
+  const context = useContext(EditorContext);
 
-export type EditorState = Static<EditorStateSchema>;
+  if (!context) {
+    throw new Error("useEditorContext must be used within an EditorContext");
+  }
+
+  return context;
+};
+
+export type EditorState = Static<typeof editorStateSchema>;
 
 export type EditorMetadata = {
-  selectionBefore: VRange | null;
-  selectionAfter: VRange | null;
+  id: string;
   name?: string;
   timestamp: number;
-  editableField: EditableField;
+  selectionBefore?: VRange | null;
+  selectionAfter?: VRange | null;
+  editorField?: EditorField;
 };
 
-export const { Provider, useValueState, useNoyaManager } = createNoyaContext<
-  EditorStateSchema,
-  EditorMetadata
->({
-  schema: editorStateSchema,
-  mergeHistoryEntries({ previous, next }) {
-    if (
-      previous.metadata.name !== undefined &&
-      previous.metadata.name === next.metadata.name &&
-      previous.metadata.editableField === next.metadata.editableField &&
-      previous.metadata.timestamp + 500 > next.metadata.timestamp
-    ) {
-      const newHistoryEntry = HistoryEntries.merge({ previous, next });
-      newHistoryEntry.metadata.selectionBefore =
-        previous.metadata.selectionBefore;
-      newHistoryEntry.metadata.selectionAfter = next.metadata.selectionAfter;
-      return newHistoryEntry;
-    }
+type EditorHistoryEntry = HistoryEntry<EditorState, EditorMetadata>;
 
-    return undefined;
-  },
-});
+function mergeHistoryEntries({
+  previous,
+  next,
+}: {
+  previous: EditorHistoryEntry;
+  next: EditorHistoryEntry;
+}) {
+  if (
+    previous.metadata.name !== undefined &&
+    previous.metadata.name === next.metadata.name &&
+    previous.metadata.editorField === next.metadata.editorField &&
+    previous.metadata.timestamp + 500 > next.metadata.timestamp
+  ) {
+    const newHistoryEntry = HistoryEntries.merge({ previous, next });
+    newHistoryEntry.metadata.selectionBefore =
+      previous.metadata.selectionBefore;
+    newHistoryEntry.metadata.selectionAfter = next.metadata.selectionAfter;
+    return newHistoryEntry;
+  }
+
+  return undefined;
+}
 
 const variableMapping = {
   "--n-primary-pastel": "var(--accent-a3)",
@@ -72,6 +97,18 @@ const variableMapping = {
   "--n-popover-background":
     "light-dark(var(--grayscale-11), var(--grayscale-2))",
 };
+
+function useCssVariables() {
+  useEffect(() => {
+    if (document.documentElement.classList.contains("dark")) {
+      document.documentElement.dataset.theme = "dark";
+
+      for (const [key, value] of Object.entries(variableMapping)) {
+        document.documentElement.style.setProperty(key, value);
+      }
+    }
+  }, []);
+}
 
 export function EditorStorage({
   children,
@@ -84,87 +121,104 @@ export function EditorStorage({
   title: string;
   subtitle?: string;
 }) {
-  useEffect(() => {
-    if (document.documentElement.classList.contains("dark")) {
-      document.documentElement.dataset.theme = "dark";
+  useCssVariables();
+  const [stateManager] = useState(
+    () =>
+      new MultiplayerStateManager<EditorState, EditorMetadata>(
+        { content, title, subtitle },
+        { autoConnect: true, schema: editorStateSchema, mergeHistoryEntries }
+      )
+  );
 
-      for (const [key, value] of Object.entries(variableMapping)) {
-        document.documentElement.style.setProperty(key, value);
-      }
-    }
-  }, []);
-
-  const [selection, setSelection] = useState<{
-    content: VRange | null;
-    title: VRange | null;
-    subtitle: VRange | null;
-  }>({
+  const [selections, setSelections] = useState<
+    Record<EditorField, VRange | null>
+  >({
     content: null,
     title: null,
     subtitle: null,
   });
 
-  return (
-    <Provider
-      initialState={{ content, title, subtitle }}
-      inspector={{
-        colorScheme: "dark",
-        anchor: "bottom right",
-      }}
-    >
-      <EditorSelectionContext.Provider value={selection}>
-        <Behavior setSelection={setSelection} />
-        {children}
-      </EditorSelectionContext.Provider>
-    </Provider>
+  const setValue = useCallback(
+    (field: EditorField) => (value: string, params: any) => {
+      stateManager.setState(params, (state) => ({
+        ...state,
+        [field]: value,
+      }));
+    },
+    [stateManager]
   );
-}
 
-function Behavior({
-  setSelection,
-}: {
-  setSelection: React.Dispatch<React.SetStateAction<EditorSelection>>;
-}) {
-  const noyaManager = useNoyaManager();
+  const setSelection = (field: EditorField) => (selection: VRange | null) => {
+    setSelections((selections) => ({
+      ...selections,
+      [field]: selection,
+    }));
+  };
+
+  const state = useObservable(stateManager.optimisticState$);
+
+  const contextValue = useMemo(
+    () => ({
+      content: {
+        value: state.content,
+        selection: selections.content,
+        setValue: setValue("content"),
+        setSelection: setSelection("content"),
+      },
+      title: {
+        value: state.title,
+        selection: selections.title,
+        setValue: setValue("title"),
+        setSelection: setSelection("title"),
+      },
+      subtitle: {
+        value: state.subtitle,
+        selection: selections.subtitle,
+        setValue: setValue("subtitle"),
+        setSelection: setSelection("subtitle"),
+      },
+    }),
+    [state, selections, setValue]
+  );
 
   useKeyboardShortcuts({
     "Mod-z": {
       allowInInput: true,
       command: () => {
-        if (noyaManager.multiplayerStateManager.canUndo()) {
-          noyaManager.multiplayerStateManager.undo();
-          const stateManager = noyaManager.multiplayerStateManager.sm;
-          const history = stateManager.history;
-          const lastEntry = history[stateManager.historyIndex];
-          if (lastEntry) {
-            setSelection((selection) => ({
-              ...selection,
-              [lastEntry.metadata.editableField as keyof EditorSelection]:
-                lastEntry.metadata.selectionBefore,
-            }));
-          }
+        if (!stateManager.canUndo()) return;
+
+        const historyEntry = stateManager.undo();
+
+        if (historyEntry) {
+          setSelections((selections) => ({
+            ...selections,
+            [historyEntry.metadata.editorField as EditorField]:
+              historyEntry.metadata.selectionBefore,
+          }));
         }
       },
     },
     "Mod-Shift-z": {
       allowInInput: true,
       command: () => {
-        if (noyaManager.multiplayerStateManager.canRedo()) {
-          noyaManager.multiplayerStateManager.redo();
-          const stateManager = noyaManager.multiplayerStateManager.sm;
-          const history = stateManager.history;
-          const lastEntry = history[stateManager.historyIndex - 1];
-          if (lastEntry) {
-            setSelection((selection) => ({
-              ...selection,
-              [lastEntry.metadata.editableField as keyof EditorSelection]:
-                lastEntry.metadata.selectionAfter,
-            }));
-          }
+        if (!stateManager.canRedo()) return;
+
+        const historyEntry = stateManager.redo();
+
+        if (historyEntry) {
+          setSelections((selections) => ({
+            ...selections,
+            [historyEntry.metadata.editorField as EditorField]:
+              historyEntry.metadata.selectionAfter,
+          }));
         }
       },
     },
   });
 
-  return <></>;
+  return (
+    <EditorContext.Provider value={contextValue}>
+      {children}
+    </EditorContext.Provider>
+  );
 }
