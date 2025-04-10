@@ -20,6 +20,8 @@ import {
 } from "@noya-app/noya-multiplayer-react";
 import { VRange } from "@noya-app/visual-editor";
 
+import { replaceFrontMatter } from "@/utils/frontMatterReplacer";
+
 export type EditorField = "content" | "title" | "subtitle";
 
 type EditorFieldState = {
@@ -122,6 +124,7 @@ export function EditorStorage({
   subtitle?: string;
 }) {
   useCssVariables();
+
   const [stateManager] = useState(
     () =>
       new MultiplayerStateManager<EditorState, EditorMetadata>(
@@ -180,6 +183,17 @@ export function EditorStorage({
     }),
     [state, selections, setValue]
   );
+
+  const resultMdxValue = useMemo(
+    () =>
+      replaceFrontMatter(state.content, {
+        title: state.title,
+        subtitle: state.subtitle,
+      }),
+    [state]
+  );
+
+  console.debug("mdx:", resultMdxValue);
 
   useKeyboardShortcuts({
     "Mod-z": {
