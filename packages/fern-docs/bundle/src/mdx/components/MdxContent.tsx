@@ -1,8 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, {
+  DetailedHTMLProps,
+  HTMLAttributes,
+  useEffect,
+  useState,
+} from "react";
 
-import { VisualMdxEditor } from "@noya-app/visual-editor";
+import { MdxEditor } from "@noya-app/visual-editor";
 import "@noya-app/visual-editor/index.css";
 
 import { Mdast } from "@fern-docs/mdx";
@@ -91,29 +96,49 @@ export function MdxContent({ mdx, fallback, editorField }: MdxContent.Props) {
   );
 }
 
+const EditorRoot = (
+  props: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+) => {
+  return <div {...props} className={(props.className || "") + " -mx-2 px-2"} />;
+};
+
 function EditableMdxContent({ mdx, editorField }: MdxContent.Props) {
   const contextValue = useEditorContext();
-  const { undo, redo } = contextValue;
-  const { value, selection, setValue, setSelection } =
-    contextValue[editorField as EditorField];
+  const {
+    undo,
+    redo,
+    [editorField as EditorField]: { value, selection, setValue, setSelection },
+  } = contextValue;
 
   if (!mdx || typeof mdx === "string") {
     return mdx;
   }
 
   const jsxElements = "jsxElements" in mdx ? mdx.jsxElements : [];
+  const components = {
+    ...createMdxComponents(jsxElements),
+    EditorRoot,
+  };
+
+  const placeholder =
+    editorField === "title"
+      ? "Title"
+      : editorField === "subtitle"
+        ? "Subtitle"
+        : undefined;
 
   return (
     <ErrorBoundary>
-      <VisualMdxEditor
+      <MdxEditor
+        preset={editorField === "content" ? "rich-text" : "single-line"}
+        placeholder={placeholder}
         mdx={value}
         onChangeMdx={(mdx, params) => setValue(mdx, { ...params, editorField })}
         parseMdast={parseMdast}
         stringifyMdast={stringifyMdast}
-        components={createMdxComponents(jsxElements)}
+        components={components}
         selection={selection}
         onChangeSelection={setSelection}
-        showSelectionToolbar={editorField === "content"}
         onUndo={undo}
         onRedo={redo}
       />
