@@ -9,13 +9,10 @@ import {
   useState,
 } from "react";
 
-import { useKeyboardShortcuts } from "@noya-app/noya-keymap";
 import {
   HistoryEntries,
   HistoryEntry,
   MultiplayerStateManager,
-  Static,
-  Type,
   useObservable,
 } from "@noya-app/noya-multiplayer-react";
 import { VRange } from "@noya-app/visual-editor";
@@ -27,20 +24,16 @@ export type EditorField = "content" | "title" | "subtitle";
 type EditorFieldState = {
   value: string;
   selection: VRange | null;
-  setValue: (value: string, params: any) => void;
+  setValue: (value: string, params: unknown) => void;
   setSelection: (selection: VRange | null) => void;
 };
-
-export const editorStateSchema = Type.Object({
-  content: Type.String(),
-  title: Type.String(),
-  subtitle: Type.String(),
-});
 
 type EditorContextValue = {
   content: EditorFieldState;
   title: EditorFieldState;
   subtitle: EditorFieldState;
+  undo: () => void;
+  redo: () => void;
 };
 
 export const EditorContext = createContext<EditorContextValue | undefined>(
@@ -57,15 +50,19 @@ export const useEditorContext = () => {
   return context;
 };
 
-export type EditorState = Static<typeof editorStateSchema>;
-
-export type EditorMetadata = {
+type EditorMetadata = {
   id: string;
   name?: string;
   timestamp: number;
   selectionBefore?: VRange | null;
   selectionAfter?: VRange | null;
   editorField?: EditorField;
+};
+
+type EditorState = {
+  content: string;
+  title: string;
+  subtitle: string;
 };
 
 type EditorHistoryEntry = HistoryEntry<EditorState, EditorMetadata>;
@@ -129,7 +126,7 @@ export function EditorStorage({
     () =>
       new MultiplayerStateManager<EditorState, EditorMetadata>(
         { content, title, subtitle },
-        { autoConnect: true, schema: editorStateSchema, mergeHistoryEntries }
+        { autoConnect: true, mergeHistoryEntries }
       )
   );
 
@@ -140,6 +137,8 @@ export function EditorStorage({
     title: null,
     subtitle: null,
   });
+
+  const state = useObservable(stateManager.optimisticState$);
 
   const setValue = useCallback(
     (field: EditorField) => (value: string, params: any) => {
@@ -158,7 +157,33 @@ export function EditorStorage({
     }));
   };
 
-  const state = useObservable(stateManager.optimisticState$);
+  const undo = useCallback(() => {
+    if (!stateManager.canUndo()) return;
+
+    const historyEntry = stateManager.undo();
+
+    if (historyEntry) {
+      setSelections((selections) => ({
+        ...selections,
+        [historyEntry.metadata.editorField as EditorField]:
+          historyEntry.metadata.selectionBefore,
+      }));
+    }
+  }, [stateManager]);
+
+  const redo = useCallback(() => {
+    if (!stateManager.canRedo()) return;
+
+    const historyEntry = stateManager.redo();
+
+    if (historyEntry) {
+      setSelections((selections) => ({
+        ...selections,
+        [historyEntry.metadata.editorField as EditorField]:
+          historyEntry.metadata.selectionAfter,
+      }));
+    }
+  }, [stateManager]);
 
   const contextValue = useMemo(
     () => ({
@@ -180,8 +205,10 @@ export function EditorStorage({
         setValue: setValue("subtitle"),
         setSelection: setSelection("subtitle"),
       },
+      undo,
+      redo,
     }),
-    [state, selections, setValue]
+    [state, selections, setValue, undo, redo]
   );
 
   const resultMdxValue = useMemo(
@@ -194,41 +221,6 @@ export function EditorStorage({
   );
 
   console.debug("mdx:", resultMdxValue);
-
-  useKeyboardShortcuts({
-    "Mod-z": {
-      allowInInput: true,
-      command: () => {
-        if (!stateManager.canUndo()) return;
-
-        const historyEntry = stateManager.undo();
-
-        if (historyEntry) {
-          setSelections((selections) => ({
-            ...selections,
-            [historyEntry.metadata.editorField as EditorField]:
-              historyEntry.metadata.selectionBefore,
-          }));
-        }
-      },
-    },
-    "Mod-Shift-z": {
-      allowInInput: true,
-      command: () => {
-        if (!stateManager.canRedo()) return;
-
-        const historyEntry = stateManager.redo();
-
-        if (historyEntry) {
-          setSelections((selections) => ({
-            ...selections,
-            [historyEntry.metadata.editorField as EditorField]:
-              historyEntry.metadata.selectionAfter,
-          }));
-        }
-      },
-    },
-  });
 
   return (
     <EditorContext.Provider value={contextValue}>

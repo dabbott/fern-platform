@@ -10,7 +10,6 @@ import { Mdast } from "@fern-docs/mdx";
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
   EditorField,
-  EditorMetadata,
   useEditorContext,
 } from "@/components/layouts/EditorStorage";
 
@@ -94,6 +93,7 @@ export function MdxContent({ mdx, fallback, editorField }: MdxContent.Props) {
 
 function EditableMdxContent({ mdx, editorField }: MdxContent.Props) {
   const contextValue = useEditorContext();
+  const { undo, redo } = contextValue;
   const { value, selection, setValue, setSelection } =
     contextValue[editorField as EditorField];
 
@@ -107,15 +107,15 @@ function EditableMdxContent({ mdx, editorField }: MdxContent.Props) {
     <ErrorBoundary>
       <VisualMdxEditor
         mdx={value}
-        onChangeMdx={(mdx, params) =>
-          setValue(mdx, { ...params, editorField } as EditorMetadata)
-        }
+        onChangeMdx={(mdx, params) => setValue(mdx, { ...params, editorField })}
         parseMdast={parseMdast}
         stringifyMdast={stringifyMdast}
         components={createMdxComponents(jsxElements)}
         selection={selection}
         onChangeSelection={setSelection}
         showSelectionToolbar={editorField === "content"}
+        onUndo={undo}
+        onRedo={redo}
       />
     </ErrorBoundary>
   );
