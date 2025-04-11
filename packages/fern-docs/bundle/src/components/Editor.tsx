@@ -64,6 +64,12 @@ export declare namespace Editor {
 
 const EditorContext = createContext<Editor.ContextValue | undefined>(undefined);
 
+const initialSelections: Record<Editor.FieldName, VRange | null> = {
+  content: null,
+  title: null,
+  subtitle: null,
+};
+
 export const useEditor = () => {
   const context = useContext(EditorContext);
 
@@ -90,13 +96,8 @@ export function EditorProvider({
       )
   );
 
-  const [selections, setSelections] = useState<
-    Record<Editor.FieldName, VRange | null>
-  >({
-    content: null,
-    title: null,
-    subtitle: null,
-  });
+  const [selections, setSelections] =
+    useState<Record<Editor.FieldName, VRange | null>>(initialSelections);
 
   const state = useObservable(stateManager.optimisticState$);
 
@@ -108,10 +109,10 @@ export function EditorProvider({
 
       if (!editorField) return;
 
-      setSelections((selections) => ({
-        ...selections,
+      setSelections({
+        ...initialSelections,
         [editorField]: selectionBefore,
-      }));
+      });
     }
   }, [stateManager]);
 
@@ -123,17 +124,20 @@ export function EditorProvider({
 
       if (!editorField) return;
 
-      setSelections((selections) => ({
-        ...selections,
+      setSelections({
+        ...initialSelections,
         [editorField]: selectionAfter,
-      }));
+      });
     }
   }, [stateManager]);
 
   const contextValue = useMemo(() => {
     const setSelection =
       (field: Editor.FieldName) => (selection: VRange | null) => {
-        setSelections((selections) => ({ ...selections, [field]: selection }));
+        setSelections({
+          ...initialSelections,
+          [field]: selection,
+        });
       };
 
     const setValue =
