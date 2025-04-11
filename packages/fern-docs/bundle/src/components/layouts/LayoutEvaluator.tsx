@@ -11,7 +11,7 @@ import { DocsLoader } from "@/server/docs-loader";
 import { MdxSerializer } from "@/server/mdx-serializer";
 
 import { asToc, getMDXExport } from "../../mdx/get-mdx-export";
-import { EditorStorage } from "./EditorStorage";
+import { EditorProvider } from "../Editor";
 import { LayoutEvaluatorContent } from "./LayoutEvaluatorContent";
 
 export async function LayoutEvaluator({
@@ -51,7 +51,7 @@ export async function LayoutEvaluator({
   const subtitle = frontmatter?.subtitle ?? frontmatter?.excerpt;
 
   return (
-    <EditorStorage content={markdown} title={title} subtitle={subtitle}>
+    <EditorProvider content={markdown} title={title} subtitle={subtitle}>
       <LayoutEvaluatorContent
         serialize={serialize}
         title={title}
@@ -69,6 +69,6 @@ export async function LayoutEvaluator({
       >
         <MdxContent mdx={mdx} fallback={markdown} editorField="content" />
       </LayoutEvaluatorContent>
-    </EditorStorage>
+    </EditorProvider>
   );
 }

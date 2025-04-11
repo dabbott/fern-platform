@@ -12,11 +12,8 @@ import "@noya-app/visual-editor/index.css";
 
 import { Mdast } from "@fern-docs/mdx";
 
+import { Editor, useEditor } from "@/components/Editor";
 import { ErrorBoundary } from "@/components/error-boundary";
-import {
-  EditorField,
-  useEditorContext,
-} from "@/components/layouts/EditorStorage";
 
 import { parseMDX, stringifyMDX } from "../bundler/client-serialize";
 import { MdxComponent } from "../bundler/component";
@@ -43,7 +40,7 @@ export declare namespace MdxContent {
   export interface Props {
     mdx: MarkdownText | MarkdownText[] | undefined;
     fallback?: React.ReactNode;
-    editorField?: EditorField;
+    editorField?: Editor.FieldName;
   }
 }
 
@@ -103,11 +100,16 @@ const EditorRoot = (
 };
 
 function EditableMdxContent({ mdx, editorField }: MdxContent.Props) {
-  const contextValue = useEditorContext();
+  const contextValue = useEditor();
   const {
     undo,
     redo,
-    [editorField as EditorField]: { value, selection, setValue, setSelection },
+    [editorField as Editor.FieldName]: {
+      value,
+      selection,
+      setValue,
+      setSelection,
+    },
   } = contextValue;
 
   if (!mdx || typeof mdx === "string") {
