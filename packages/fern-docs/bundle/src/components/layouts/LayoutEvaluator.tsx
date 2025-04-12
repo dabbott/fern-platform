@@ -11,6 +11,7 @@ import { DocsLoader } from "@/server/docs-loader";
 import { MdxSerializer } from "@/server/mdx-serializer";
 
 import { asToc, getMDXExport } from "../../mdx/get-mdx-export";
+import { EditorProvider } from "../Editor";
 import { LayoutEvaluatorContent } from "./LayoutEvaluatorContent";
 
 export async function LayoutEvaluator({
@@ -46,24 +47,29 @@ export async function LayoutEvaluator({
 
   frontmatter["edit-this-page-url"] ??= editThisPageUrl;
 
+  const title = frontmatter?.title ?? fallbackTitle;
+  const subtitle = frontmatter?.subtitle ?? frontmatter?.excerpt;
+
   return (
-    <LayoutEvaluatorContent
-      serialize={serialize}
-      title={frontmatter?.title ?? fallbackTitle}
-      subtitle={frontmatter?.subtitle ?? frontmatter?.excerpt}
-      frontmatter={frontmatter}
-      breadcrumb={breadcrumb}
-      tableOfContents={toc}
-      aside={
-        mdx && exports?.Aside ? (
-          <MdxAside code={mdx.code} jsxElements={mdx.jsxElements} />
-        ) : undefined
-      }
-      bottomNavigation={bottomNavigation}
-      slug={slug}
-      markdown={markdown}
-    >
-      <MdxContent mdx={mdx} fallback={markdown} />
-    </LayoutEvaluatorContent>
+    <EditorProvider content={markdown} title={title} subtitle={subtitle}>
+      <LayoutEvaluatorContent
+        serialize={serialize}
+        title={title}
+        subtitle={subtitle}
+        frontmatter={frontmatter}
+        breadcrumb={breadcrumb}
+        tableOfContents={toc}
+        aside={
+          mdx && exports?.Aside ? (
+            <MdxAside code={mdx.code} jsxElements={mdx.jsxElements} />
+          ) : undefined
+        }
+        bottomNavigation={bottomNavigation}
+        slug={slug}
+        markdown={markdown}
+      >
+        <MdxContent mdx={mdx} fallback={markdown} editorField="content" />
+      </LayoutEvaluatorContent>
+    </EditorProvider>
   );
 }

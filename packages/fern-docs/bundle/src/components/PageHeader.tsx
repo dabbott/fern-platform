@@ -53,6 +53,7 @@ export function PageHeader({
                 serialize={serialize}
                 mdx={title}
                 slug={slug}
+                editorField="title"
               />
             </h1>
           ) : (
@@ -81,6 +82,7 @@ export function PageHeader({
               serialize={serialize}
               mdx={subtitle}
               slug={slug}
+              editorField="subtitle"
             />
           </React.Suspense>
         </div>
